@@ -44,6 +44,7 @@ interface GameViewModel {
     fun startGame()
 
     fun checkMatch()
+    fun resetGame()
 }
 
 class GameVM(
@@ -93,22 +94,50 @@ class GameVM(
     }
 
     override fun checkMatch() {
+        if(_gameState.value.hasPlayed)
+            return
+        val currentValue = _gameState.value.eventValue
+        val previousValue = _gameState.value.previousValue
+        if(currentValue == previousValue ){
+            _score.value +=1
+        }else{
+            _score.value -=1
+        }
+        _gameState.value.copy(hasPlayed =  true)
         /**
          * Todo: This function should check if there is a match when the user presses a match button
          * Make sure the user can only register a match once for each event.
          */
     }
+
+    override fun resetGame() {
+        job?.cancel()
+        _gameState.value.copy(
+            gameType = GameType.Visual,
+            eventValue = -1,
+            previousValue = -1,
+            hasPlayed = false
+        )
+        _score.value = 0
+    }
+
     private fun runAudioGame() {
         // Todo: Make work for Basic grade
     }
 
     private suspend fun runVisualGame(events: Array<Int>){
         // Todo: Replace this code for actual game code
-        for (value in events) {
-            _gameState.value = _gameState.value.copy(eventValue = value)
+        var previousValue: Int = -1
+        for (i in events.indices) {
+            if(i >= nBack)
+                previousValue = events[i-nBack]
+            _gameState.value = _gameState.value.copy(
+                eventValue = events[i],
+                previousValue = previousValue
+            )
             delay(eventInterval)
+            previousValue = -1
         }
-
     }
 
     private fun runAudioVisualGame(){
@@ -144,7 +173,9 @@ enum class GameType{
 data class GameState(
     // You can use this state to push values from the VM to your UI.
     val gameType: GameType = GameType.Visual,  // Type of the game
-    val eventValue: Int = -1  // The value of the array string
+    val eventValue: Int = -1,  // The value of the array string
+    val previousValue: Int = -1,
+    val hasPlayed: Boolean = false
 )
 
 class FakeVM: GameViewModel{
@@ -164,5 +195,9 @@ class FakeVM: GameViewModel{
     }
 
     override fun checkMatch() {
+    }
+
+    override fun resetGame() {
+
     }
 }

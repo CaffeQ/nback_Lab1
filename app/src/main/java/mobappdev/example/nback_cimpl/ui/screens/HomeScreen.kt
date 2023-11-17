@@ -1,5 +1,6 @@
 package mobappdev.example.nback_cimpl.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import mobappdev.example.nback_cimpl.R
 import mobappdev.example.nback_cimpl.ui.viewmodels.FakeVM
+import mobappdev.example.nback_cimpl.ui.viewmodels.GameType
 import mobappdev.example.nback_cimpl.ui.viewmodels.GameViewModel
 
 /**
@@ -93,13 +96,50 @@ fun HomeScreen(
                     }
                 }
             }
+            ChooseGameModes(vm = vm)
             Button(
                 onClick = {navigate.invoke()}
             ){
                 Text(
-                    modifier = Modifier.padding(24.dp),
-                    text = "Start Game".uppercase(),
+                    modifier = Modifier.padding(12.dp),
+                    text = "Go to game".uppercase(),
                     style = MaterialTheme.typography.displaySmall
+                )
+            }
+        }
+    }
+}
+
+@SuppressLint("StateFlowValueCalledInComposition")
+@Composable
+fun ChooseGameModes(vm:GameViewModel){
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Button(
+                onClick = {vm.setGameType(GameType.Visual)}
+            ){
+                Text(
+                    modifier = Modifier.padding(12.dp),
+                    text = "Visual".uppercase(),
+                    color = Color.Black,
+                )
+            }
+            Button(
+                onClick = {/*TODO*/}
+            ){
+                Text(
+                    modifier = Modifier.padding(12.dp),
+                    text = "Audio".uppercase(),
+                    color = Color.Black,
                 )
             }
         }
