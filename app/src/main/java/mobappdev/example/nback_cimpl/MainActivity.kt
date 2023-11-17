@@ -8,6 +8,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import mobappdev.example.nback_cimpl.ui.screens.GameScreen
 import mobappdev.example.nback_cimpl.ui.screens.HomeScreen
 import mobappdev.example.nback_cimpl.ui.theme.NBack_CImplTheme
 import mobappdev.example.nback_cimpl.ui.viewmodels.GameVM
@@ -36,13 +40,19 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Instantiate the viewmodel
                     val gameViewModel: GameVM = viewModel(
                         factory = GameVM.Factory
                     )
 
-                    // Instantiate the homescreen
-                    HomeScreen(vm = gameViewModel)
+                    val navCon = rememberNavController();
+                    NavHost(navController = navCon, startDestination = "home"){
+                        composable("home"){
+                            HomeScreen(vm = gameViewModel, navigate={navCon.navigate("game")})
+                        }
+                        composable("game"){
+                            GameScreen(vm = gameViewModel, navigate={navCon.navigate("home")} )
+                        }
+                    }
                 }
             }
         }

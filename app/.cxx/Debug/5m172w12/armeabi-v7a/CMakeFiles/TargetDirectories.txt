@@ -1,0 +1,4 @@
+C:/Users/Test/Documents/GitHub/HI1033/nback_skeletoncode/app/.cxx/Debug/5m172w12/armeabi-v7a/CMakeFiles/nback_cimpl.dir
+C:/Users/Test/Documents/GitHub/HI1033/nback_skeletoncode/app/.cxx/Debug/5m172w12/armeabi-v7a/CMakeFiles/JniBridge.dir
+C:/Users/Test/Documents/GitHub/HI1033/nback_skeletoncode/app/.cxx/Debug/5m172w12/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/Test/Documents/GitHub/HI1033/nback_skeletoncode/app/.cxx/Debug/5m172w12/armeabi-v7a/CMakeFiles/rebuild_cache.dir

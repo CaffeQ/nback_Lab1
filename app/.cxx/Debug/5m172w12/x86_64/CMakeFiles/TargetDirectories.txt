@@ -1,0 +1,4 @@
+C:/Users/Test/Documents/GitHub/HI1033/nback_skeletoncode/app/.cxx/Debug/5m172w12/x86_64/CMakeFiles/nback_cimpl.dir
+C:/Users/Test/Documents/GitHub/HI1033/nback_skeletoncode/app/.cxx/Debug/5m172w12/x86_64/CMakeFiles/JniBridge.dir
+C:/Users/Test/Documents/GitHub/HI1033/nback_skeletoncode/app/.cxx/Debug/5m172w12/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/Test/Documents/GitHub/HI1033/nback_skeletoncode/app/.cxx/Debug/5m172w12/x86_64/CMakeFiles/rebuild_cache.dir
