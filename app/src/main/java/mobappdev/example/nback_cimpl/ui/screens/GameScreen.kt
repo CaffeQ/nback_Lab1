@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -37,6 +38,7 @@ import mobappdev.example.nback_cimpl.ui.viewmodels.FakeVM
 import mobappdev.example.nback_cimpl.ui.viewmodels.GameState
 import mobappdev.example.nback_cimpl.ui.viewmodels.GameType
 import mobappdev.example.nback_cimpl.ui.viewmodels.GameViewModel
+import mobappdev.example.nback_cimpl.ui.viewmodels.Guess
 
 @Composable
 fun GameScreen(
@@ -61,6 +63,14 @@ fun GameScreen(
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
 @Composable
 fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
+    val gameState by vm.gameState.collectAsState()
+    val visualButtonColor = when(gameState.guess){
+        Guess.FALSE -> ButtonDefaults.buttonColors(Color.Red)
+        Guess.CORRECT -> ButtonDefaults.buttonColors(Color.Green)
+        else -> { ButtonDefaults.buttonColors(Color(127, 82, 255)) }
+    }
+    val audioButtonColor = ButtonDefaults.buttonColors(Color(127, 82, 255))
+
 
     val snackBarHostState = remember {
         SnackbarHostState()
@@ -75,14 +85,10 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(onClick = {
-                // Todo: change this button behaviour
-                scope.launch {
-                    snackBarHostState.showSnackbar(
-                        message = "Hey! you clicked the audio button"
-                    )
-                }
-            }) {
+            Button(
+                onClick = { vm.checkMatch() },
+                colors = visualButtonColor
+            ) {
                 Icon(
                     painter = painterResource(id = R.drawable.sound_on),
                     contentDescription = "Sound",
@@ -92,8 +98,9 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
                 )
             }
             Button(
-                onClick = vm::checkMatch
-                ) {
+                onClick = { vm.checkMatch() },
+                colors = audioButtonColor
+            ) {
                 Icon(
                     painter = painterResource(id = R.drawable.visual),
                     contentDescription = "Visual",

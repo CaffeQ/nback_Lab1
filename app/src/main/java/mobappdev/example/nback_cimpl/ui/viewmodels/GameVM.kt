@@ -1,5 +1,6 @@
 package mobappdev.example.nback_cimpl.ui.viewmodels
 
+import android.text.BoringLayout
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -94,26 +95,26 @@ class GameVM(
     }
 
     override fun checkMatch() {
-        if(_gameState.value.hasPlayed)
+        if(!(Guess.NONE == _gameState.value.guess))
             return
         val currentValue = _gameState.value.eventValue
         val previousValue = _gameState.value.previousValue
-        if(currentValue == previousValue ){
+        val guess: Guess
+        if(previousValue != -1 && currentValue == previousValue ){
             _score.value +=1
+            guess = Guess.CORRECT
         }else{
             _score.value -=1
+            guess = Guess.FALSE
         }
-        _gameState.value.copy(hasPlayed =  true)
-        /**
-         * Todo: This function should check if there is a match when the user presses a match button
-         * Make sure the user can only register a match once for each event.
-         */
+        _gameState.value = _gameState.value.copy(guess = guess)
     }
 
     override fun resetGame() {
         job?.cancel()
-        _gameState.value.copy(
+        _gameState.value = _gameState.value.copy(
             gameType = GameType.Visual,
+            guess = Guess.NONE,
             eventValue = -1,
             previousValue = -1,
             hasPlayed = false
@@ -129,11 +130,13 @@ class GameVM(
         // Todo: Replace this code for actual game code
         var previousValue: Int = -1
         for (i in events.indices) {
-            if(i >= nBack)
+            if(i >= nBack){
                 previousValue = events[i-nBack]
+            }
             _gameState.value = _gameState.value.copy(
                 eventValue = events[i],
-                previousValue = previousValue
+                previousValue = previousValue,
+                guess = Guess.NONE,
             )
             delay(eventInterval)
             previousValue = -1
@@ -169,13 +172,19 @@ enum class GameType{
     Visual,
     AudioVisual
 }
+enum class Guess{
+    CORRECT,
+    FALSE,
+    NONE
+}
 
 data class GameState(
     // You can use this state to push values from the VM to your UI.
     val gameType: GameType = GameType.Visual,  // Type of the game
     val eventValue: Int = -1,  // The value of the array string
     val previousValue: Int = -1,
-    val hasPlayed: Boolean = false
+    val hasPlayed: Boolean = false,
+    val guess: Guess = Guess.NONE
 )
 
 class FakeVM: GameViewModel{
