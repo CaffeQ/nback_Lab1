@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -52,6 +53,9 @@ fun GameScreen(
     val gameState by vm.gameState.collectAsState()
     var textToSpeech: TextToSpeech? by remember { mutableStateOf(null) }
     val context = LocalContext.current
+    val sideLength by vm.sideLength.collectAsState()
+    val score by vm.score.collectAsState()
+    val N by vm.nBack.collectAsState()
     if (textToSpeech == null) {
         textToSpeech = TextToSpeech(context) {
             if (it == TextToSpeech.SUCCESS) {
@@ -70,7 +74,18 @@ fun GameScreen(
         .fillMaxWidth()
         .fillMaxHeight()) {
         //ChooseGameModes(vm)
-        Grid(vm,gameState,sideLength = 3)
+        Column(
+            modifier = Modifier,
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                modifier = Modifier.padding(12.dp),
+                text = "Score: $score N = $N",
+                style = MaterialTheme.typography.headlineLarge
+            )
+        }
+        Grid(vm,gameState,sideLength = sideLength)
 
         VisualAndAudio(vm,navigate)
     }
@@ -138,7 +153,7 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
             ){
                 Text(
                     modifier = Modifier.padding(12.dp),
-                    text ="Score "+ vm.score.value.toString() + " N = "+n.toString() + "Event Value="+gameState.eventValue.toString(),
+                    text ="Event Value="+gameState.eventValue.toString(),
                     color = Color.Black,
                 )
             }

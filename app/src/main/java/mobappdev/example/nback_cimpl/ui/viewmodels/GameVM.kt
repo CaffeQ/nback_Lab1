@@ -38,9 +38,14 @@ import mobappdev.example.nback_cimpl.data.UserPreferencesRepository
 interface GameViewModel {
     val gameState: StateFlow<GameState>
     val score: StateFlow<Int>
+    val sideLength: StateFlow<Int>
     val highscore: StateFlow<Int>
     val nBack: StateFlow<Int>
     val isPlaying: StateFlow<Boolean>
+
+    val nrOfScores: StateFlow<Int>//Kanske inte behövs
+
+    val percentMatches: StateFlow<Int>
     val nrOfTurns: StateFlow<Int>
     fun setGameType(gameType: GameType)
     fun startGame()
@@ -51,6 +56,15 @@ interface GameViewModel {
 
     fun increaseNback()
     fun decreaseNback()
+
+    fun increaseSideLength()
+    fun decreaseSideLength()
+
+    fun increaseTurns()
+    fun decreaseTurns()
+
+    fun decreasePercent(percent:Int)
+    fun increasePercent(percent:Int)
 
 }
 
@@ -64,6 +78,9 @@ class GameVM(
     private val _score = MutableStateFlow(0)
     override val score: StateFlow<Int>
         get() = _score
+    private val _sideLength = MutableStateFlow(3)
+    override val sideLength: StateFlow<Int>
+        get() = _sideLength
 
     private val _highscore = MutableStateFlow(0)
     override val highscore: StateFlow<Int>
@@ -76,6 +93,14 @@ class GameVM(
     private val _isPlaying = MutableStateFlow(false)
     override val isPlaying: StateFlow<Boolean>
         get() = _isPlaying
+    override val nrOfScores: StateFlow<Int>
+        get() = _nrOfScores
+    private val _nrOfScores = MutableStateFlow(0)
+
+
+    private val _percentMatches = MutableStateFlow(30)
+    override val percentMatches: StateFlow<Int>
+        get() = _percentMatches
 
     private val _nrOfTurns = MutableStateFlow(10)
     override val nrOfTurns: StateFlow<Int>
@@ -97,7 +122,11 @@ class GameVM(
         job?.cancel()  // Cancel any existing game loop
 
         // Get the events from our C-model (returns IntArray, so we need to convert to Array<Int>)
-        events = nBackHelper.generateNBackString(10, 9, 30, _nBack.value).toList().toTypedArray()  // Todo Higher Grade: currently the size etc. are hardcoded, make these based on user input
+        events = nBackHelper.generateNBackString(
+            _nrOfTurns.value,
+            _sideLength.value*_sideLength.value,
+            _percentMatches.value,
+            _nBack.value).toList().toTypedArray()  // Todo Higher Grade: currently the size etc. are hardcoded, make these based on user input
         Log.d("GameVM", "The following sequence was generated: ${events.contentToString()}")
 
         job = viewModelScope.launch {
@@ -157,6 +186,36 @@ class GameVM(
             _nBack.value -= 1
     }
 
+    override fun increaseSideLength() {
+        if(_sideLength.value <= 5)
+            _sideLength.value += 1
+    }
+
+    override fun decreaseSideLength() {
+        if(_sideLength.value >= 3)
+            _sideLength.value -= 1
+    }
+
+    override fun increaseTurns() {
+        if(_nrOfTurns.value < 40)
+            _nrOfTurns.value += 1
+    }
+
+    override fun decreaseTurns() {
+        if(_nrOfTurns.value - 1 > 10)
+            _nrOfTurns.value -= 1
+    }
+
+    override fun decreasePercent(percent: Int) {
+        if(_percentMatches.value - percent >= 10)
+            _percentMatches.value -= percent
+    }
+
+    override fun increasePercent(percent: Int) {
+        if(_percentMatches.value + percent <= 50)
+            _percentMatches.value += percent
+    }
+
     private suspend fun runAudioGame() {
         resetGame()
         var previousValue: Int = -1
@@ -214,6 +273,12 @@ class GameVM(
             7 -> "G"
             8 -> "H"
             9 -> "I"
+            10 -> "J"
+            11 -> "K"
+            12 -> "L"
+            13 -> "M"
+            14 -> "N"
+            15 -> "O"
             else -> {"?"}
         }
     }
@@ -264,11 +329,17 @@ class FakeVM: GameViewModel{
         get() = MutableStateFlow(GameState()).asStateFlow()
     override val score: StateFlow<Int>
         get() = MutableStateFlow(2).asStateFlow()
+    override val sideLength: StateFlow<Int>
+        get() = TODO("Not yet implemented")
     override val highscore: StateFlow<Int>
         get() = MutableStateFlow(42).asStateFlow()
     override val nBack: StateFlow<Int>
         get() = nBack
     override val isPlaying: StateFlow<Boolean>
+        get() = TODO("Not yet implemented")
+    override val nrOfScores: StateFlow<Int>
+        get() = TODO("Not yet implemented")
+    override val percentMatches: StateFlow<Int>
         get() = TODO("Not yet implemented")
     override val nrOfTurns: StateFlow<Int>
         get() = TODO("Not yet implemented")
@@ -299,6 +370,30 @@ class FakeVM: GameViewModel{
     }
 
     override fun decreaseNback() {
+        TODO("Not yet implemented")
+    }
+
+    override fun increaseSideLength() {
+        TODO("Not yet implemented")
+    }
+
+    override fun decreaseSideLength() {
+        TODO("Not yet implemented")
+    }
+
+    override fun increaseTurns() {
+        TODO("Not yet implemented")
+    }
+
+    override fun decreaseTurns() {
+        TODO("Not yet implemented")
+    }
+
+    override fun decreasePercent(percent: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun increasePercent(percent: Int) {
         TODO("Not yet implemented")
     }
 }

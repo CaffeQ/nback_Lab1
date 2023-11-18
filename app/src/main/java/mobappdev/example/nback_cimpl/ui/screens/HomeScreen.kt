@@ -60,7 +60,10 @@ fun HomeScreen(
     val gameState by vm.gameState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
     val N by vm.nBack.collectAsState()
+    val sideLength by vm.sideLength.collectAsState()
     val scope = rememberCoroutineScope()
+    val nrOfTurns by vm.nrOfTurns.collectAsState()
+    val percent by vm.percentMatches.collectAsState()
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackBarHostState) }
@@ -77,28 +80,70 @@ fun HomeScreen(
                 text = "High-Score = $highscore",
                 style = MaterialTheme.typography.headlineLarge
             )
-
-
             // Todo: You'll probably want to change this "BOX" part of the composable
-            Box(
+            Column(
                 modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.Center
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Button(onClick = { vm.increaseNback() }) {
-                        Text(text = "+1")
+                    Button(onClick = { vm.decreaseNback() }) {
+                        Text(text = "-1")
                     }
                     Button(onClick = {}) {
                         Text(text = "N = $N")
                     }
-                    Button(onClick = { vm.decreaseNback() }) {
+                    Button(onClick = { vm.increaseNback() }) {
+                        Text(text = "+1")
+                    }
+                }
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ){
+                    Button(onClick = { vm.decreaseSideLength() }) {
                         Text(text = "-1")
+                    }
+                    Button(onClick = {}) {
+                        Text(text = "$sideLength X $sideLength")
+                    }
+                    Button(onClick = { vm.increaseSideLength() }) {
+                        Text(text = "+1")
+                    }
+                }
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ){
+                    Button(onClick = { vm.decreaseTurns() }) {
+                        Text(text = "-1")
+                    }
+                    Button(onClick = {}) {
+                        Text(text = "Turns = $nrOfTurns")
+                    }
+                    Button(onClick = { vm.increaseTurns() }) {
+                        Text(text = "+1")
+                    }
+                }
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ){
+                    Button(onClick = { vm.decreasePercent(5) }) {
+                        Text(text = "-5")
+                    }
+                    Button(onClick = {}) {
+                        Text(text = "Percent = $percent")
+                    }
+                    Button(onClick = { vm.increasePercent(5) }) {
+                        Text(text = "+5")
                     }
                 }
             }
+
+
             ChooseGameModes(vm = vm)
             Button(
                 onClick = {navigate.invoke()}
