@@ -330,19 +330,19 @@ class FakeVM: GameViewModel{
     override val score: StateFlow<Int>
         get() = MutableStateFlow(2).asStateFlow()
     override val sideLength: StateFlow<Int>
-        get() = TODO("Not yet implemented")
+        get() = MutableStateFlow(3).asStateFlow()
     override val highscore: StateFlow<Int>
         get() = MutableStateFlow(42).asStateFlow()
     override val nBack: StateFlow<Int>
-        get() = nBack
+        get() = MutableStateFlow(4).asStateFlow()
     override val isPlaying: StateFlow<Boolean>
-        get() = TODO("Not yet implemented")
+        get() = MutableStateFlow(false).asStateFlow()
     override val nrOfScores: StateFlow<Int>
-        get() = TODO("Not yet implemented")
+        get() = MutableStateFlow(0).asStateFlow()
     override val percentMatches: StateFlow<Int>
-        get() = TODO("Not yet implemented")
+        get() = MutableStateFlow(30).asStateFlow()
     override val nrOfTurns: StateFlow<Int>
-        get() = TODO("Not yet implemented")
+        get() = MutableStateFlow(10).asStateFlow()
 
     override fun setGameType(gameType: GameType) {
     }
@@ -351,11 +351,11 @@ class FakeVM: GameViewModel{
     }
 
     override fun enableSpeech() {
-        TODO("Not yet implemented")
+
     }
 
     override fun disableSpeech() {
-        TODO("Not yet implemented")
+
     }
 
     override fun checkMatch() {
@@ -366,34 +366,32 @@ class FakeVM: GameViewModel{
     }
 
     override fun increaseNback() {
-        TODO("Not yet implemented")
+
     }
 
     override fun decreaseNback() {
-        TODO("Not yet implemented")
     }
 
     override fun increaseSideLength() {
-        TODO("Not yet implemented")
+
     }
 
     override fun decreaseSideLength() {
-        TODO("Not yet implemented")
     }
 
     override fun increaseTurns() {
-        TODO("Not yet implemented")
+
     }
 
     override fun decreaseTurns() {
-        TODO("Not yet implemented")
+
     }
 
     override fun decreasePercent(percent: Int) {
-        TODO("Not yet implemented")
+
     }
 
     override fun increasePercent(percent: Int) {
-        TODO("Not yet implemented")
+
     }
 }

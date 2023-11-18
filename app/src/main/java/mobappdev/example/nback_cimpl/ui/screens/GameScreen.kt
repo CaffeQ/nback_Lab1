@@ -2,6 +2,7 @@ package mobappdev.example.nback_cimpl.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.compose.foundation.background
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -33,8 +35,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import mobappdev.example.nback_cimpl.R
@@ -50,12 +54,15 @@ fun GameScreen(
     vm:GameViewModel,
     navigate: ()->Unit
 ){
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val gameState by vm.gameState.collectAsState()
-    var textToSpeech: TextToSpeech? by remember { mutableStateOf(null) }
+    //var textToSpeech: TextToSpeech? by remember { mutableStateOf(null) }
     val context = LocalContext.current
     val sideLength by vm.sideLength.collectAsState()
     val score by vm.score.collectAsState()
     val N by vm.nBack.collectAsState()
+    /*
     if (textToSpeech == null) {
         textToSpeech = TextToSpeech(context) {
             if (it == TextToSpeech.SUCCESS) {
@@ -63,31 +70,51 @@ fun GameScreen(
             }
         }
     }
+
+     */
     if(vm.gameState.value.isSpeech){ //fungerar inte med vanliga gameState.isSpeech
         val letter = gameState.letter
-        textToSpeech?.speak(letter, TextToSpeech.QUEUE_FLUSH, null, null)
+    //    textToSpeech?.speak(letter, TextToSpeech.QUEUE_FLUSH, null, null)
         vm.disableSpeech()
     }
+    if(isLandscape){
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
 
-
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .fillMaxHeight()) {
-        //ChooseGameModes(vm)
-        Column(
-            modifier = Modifier,
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                modifier = Modifier.padding(12.dp),
-                text = "Score: $score N = $N",
-                style = MaterialTheme.typography.headlineLarge
-            )
+            Box(modifier = Modifier
+                .weight(1f)){
+                VisualAndAudio(vm = vm,navigate)
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+            ){
+                Grid(vm = vm, gameState = gameState, sideLength = sideLength)
+            }
         }
-        Grid(vm,gameState,sideLength = sideLength)
+    }else{
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()) {
+            //ChooseGameModes(vm)
+            Column(
+                modifier = Modifier,
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    modifier = Modifier.padding(12.dp),
+                    text = "Score: $score N = $N",
+                    style = MaterialTheme.typography.headlineLarge
+                )
+            }
+            Grid(vm,gameState,sideLength = sideLength)
 
-        VisualAndAudio(vm,navigate)
+            VisualAndAudio(vm,navigate)
+        }
     }
 }
 
@@ -261,6 +288,12 @@ fun StartGame(vm:GameViewModel){
         )
     }
 
+}
+
+@Preview(showBackground = true, device = Devices.NEXUS_9, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Composable
+fun GameScreenLandscapePreview(){
+    GameScreen(FakeVM(),navigate = {"home"})
 }
 
 @Preview(showBackground = true)
