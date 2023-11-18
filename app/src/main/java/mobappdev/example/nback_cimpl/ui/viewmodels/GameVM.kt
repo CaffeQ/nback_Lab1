@@ -40,10 +40,11 @@ interface GameViewModel {
     val score: StateFlow<Int>
     val highscore: StateFlow<Int>
     val nBack: Int
-
+    val isPlaying: StateFlow<Boolean>
     fun setGameType(gameType: GameType)
     fun startGame()
-
+    fun enableSpeech()
+    fun disableSpeech()
     fun checkMatch()
     fun resetGame()
 }
@@ -65,6 +66,10 @@ class GameVM(
 
     // nBack is currently hardcoded
     override val nBack: Int = 2
+    private val _isPlaying = MutableStateFlow(false)
+    override val isPlaying: StateFlow<Boolean>
+        get() = _isPlaying
+
 
     private var job: Job? = null  // coroutine job for the game event
     private val eventInterval: Long = 2000L  // 2000 ms (2s)
@@ -94,8 +99,16 @@ class GameVM(
         }
     }
 
+    override fun enableSpeech() {
+        _gameState.value = _gameState.value.copy(isSpeech = true)
+    }
+
+    override fun disableSpeech() {
+        _gameState.value = _gameState.value.copy(isSpeech = false)
+    }
+
     override fun checkMatch() {
-        if(!(Guess.NONE == _gameState.value.guess))
+        if(Guess.NONE != _gameState.value.guess)
             return
         val currentValue = _gameState.value.eventValue
         val previousValue = _gameState.value.previousValue
@@ -113,27 +126,47 @@ class GameVM(
     override fun resetGame() {
         job?.cancel()
         _gameState.value = _gameState.value.copy(
-            gameType = GameType.Visual,
+            gameType = _gameState.value.gameType,
             guess = Guess.NONE,
             eventValue = -1,
             previousValue = -1,
-            hasPlayed = false
         )
+        _isPlaying.value = false
         _score.value = 0
     }
 
-    private fun runAudioGame() {
-        // Todo: Make work for Basic grade
-    }
-
-    private suspend fun runVisualGame(events: Array<Int>){
-        // Todo: Replace this code for actual game code
+    private suspend fun runAudioGame() {
+        resetGame()
         var previousValue: Int = -1
+        _isPlaying.value = true
         for (i in events.indices) {
             if(i >= nBack){
                 previousValue = events[i-nBack]
             }
             _gameState.value = _gameState.value.copy(
+                gameType = GameType.Audio,
+                eventValue = events[i],
+                previousValue = previousValue,
+                guess = Guess.NONE,
+                letter = intToLetter(events[i]),
+                isSpeech = true
+            )
+            delay(eventInterval)
+            previousValue = -1
+        }
+        _isPlaying.value = false
+    }
+
+    private suspend fun runVisualGame(events: Array<Int>){
+        resetGame()
+        var previousValue: Int = -1
+        _isPlaying.value = true
+        for (i in events.indices) {
+            if(i >= nBack){
+                previousValue = events[i-nBack]
+            }
+            _gameState.value = _gameState.value.copy(
+                gameType = GameType.Visual,
                 eventValue = events[i],
                 previousValue = previousValue,
                 guess = Guess.NONE,
@@ -141,10 +174,26 @@ class GameVM(
             delay(eventInterval)
             previousValue = -1
         }
+        _isPlaying.value = false
     }
 
     private fun runAudioVisualGame(){
         // Todo: Make work for Higher grade
+    }
+
+    private fun intToLetter(value:Int): String{
+        return when(value){
+            1 -> "A"
+            2 -> "B"
+            3 -> "C"
+            4 -> "D"
+            5 -> "E"
+            6 -> "F"
+            7 -> "G"
+            8 -> "H"
+            9 -> "I"
+            else -> {"?"}
+        }
     }
 
     companion object {
@@ -183,8 +232,9 @@ data class GameState(
     val gameType: GameType = GameType.Visual,  // Type of the game
     val eventValue: Int = -1,  // The value of the array string
     val previousValue: Int = -1,
-    val hasPlayed: Boolean = false,
-    val guess: Guess = Guess.NONE
+    val guess: Guess = Guess.NONE,
+    val letter: String = "?",
+    val isSpeech: Boolean = false
 )
 
 class FakeVM: GameViewModel{
@@ -196,11 +246,21 @@ class FakeVM: GameViewModel{
         get() = MutableStateFlow(42).asStateFlow()
     override val nBack: Int
         get() = 2
+    override val isPlaying: StateFlow<Boolean>
+        get() = TODO("Not yet implemented")
 
     override fun setGameType(gameType: GameType) {
     }
 
     override fun startGame() {
+    }
+
+    override fun enableSpeech() {
+        TODO("Not yet implemented")
+    }
+
+    override fun disableSpeech() {
+        TODO("Not yet implemented")
     }
 
     override fun checkMatch() {

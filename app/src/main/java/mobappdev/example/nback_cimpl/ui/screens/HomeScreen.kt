@@ -134,7 +134,7 @@ fun ChooseGameModes(vm:GameViewModel){
                 )
             }
             Button(
-                onClick = {/*TODO*/}
+                onClick = {vm.setGameType(GameType.Audio)}
             ){
                 Text(
                     modifier = Modifier.padding(12.dp),
