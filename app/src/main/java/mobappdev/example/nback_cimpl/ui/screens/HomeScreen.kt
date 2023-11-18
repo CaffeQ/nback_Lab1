@@ -50,6 +50,7 @@ import mobappdev.example.nback_cimpl.ui.viewmodels.GameViewModel
  *
  */
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun HomeScreen(
     vm: GameViewModel,
@@ -58,6 +59,7 @@ fun HomeScreen(
     val highscore by vm.highscore.collectAsState()  // Highscore is its own StateFlow
     val gameState by vm.gameState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
+    val N by vm.nBack.collectAsState()
     val scope = rememberCoroutineScope()
 
     Scaffold(
@@ -75,24 +77,25 @@ fun HomeScreen(
                 text = "High-Score = $highscore",
                 style = MaterialTheme.typography.headlineLarge
             )
+
+
             // Todo: You'll probably want to change this "BOX" part of the composable
             Box(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.Center
             ) {
-                Column(
+                Row(
                     Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    if (gameState.eventValue != -1) {
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = "Current eventValue is: ${gameState.eventValue}",
-                            textAlign = TextAlign.Center
-                        )
+                    Button(onClick = { vm.increaseNback() }) {
+                        Text(text = "+1")
                     }
-                    Button(onClick = vm::startGame) {
-                        Text(text = "Generate eventValues")
+                    Button(onClick = {}) {
+                        Text(text = "N = $N")
+                    }
+                    Button(onClick = { vm.decreaseNback() }) {
+                        Text(text = "-1")
                     }
                 }
             }

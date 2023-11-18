@@ -39,14 +39,19 @@ interface GameViewModel {
     val gameState: StateFlow<GameState>
     val score: StateFlow<Int>
     val highscore: StateFlow<Int>
-    val nBack: Int
+    val nBack: StateFlow<Int>
     val isPlaying: StateFlow<Boolean>
+    val nrOfTurns: StateFlow<Int>
     fun setGameType(gameType: GameType)
     fun startGame()
     fun enableSpeech()
     fun disableSpeech()
     fun checkMatch()
     fun resetGame()
+
+    fun increaseNback()
+    fun decreaseNback()
+
 }
 
 class GameVM(
@@ -65,10 +70,16 @@ class GameVM(
         get() = _highscore
 
     // nBack is currently hardcoded
-    override val nBack: Int = 2
+    private val _nBack = MutableStateFlow(2)
+    override val nBack: StateFlow<Int>
+        get() = _nBack.asStateFlow()
     private val _isPlaying = MutableStateFlow(false)
     override val isPlaying: StateFlow<Boolean>
         get() = _isPlaying
+
+    private val _nrOfTurns = MutableStateFlow(10)
+    override val nrOfTurns: StateFlow<Int>
+        get() = _nrOfTurns
 
 
     private var job: Job? = null  // coroutine job for the game event
@@ -86,7 +97,7 @@ class GameVM(
         job?.cancel()  // Cancel any existing game loop
 
         // Get the events from our C-model (returns IntArray, so we need to convert to Array<Int>)
-        events = nBackHelper.generateNBackString(10, 9, 30, nBack).toList().toTypedArray()  // Todo Higher Grade: currently the size etc. are hardcoded, make these based on user input
+        events = nBackHelper.generateNBackString(10, 9, 30, _nBack.value).toList().toTypedArray()  // Todo Higher Grade: currently the size etc. are hardcoded, make these based on user input
         Log.d("GameVM", "The following sequence was generated: ${events.contentToString()}")
 
         job = viewModelScope.launch {
@@ -95,7 +106,8 @@ class GameVM(
                 GameType.AudioVisual -> runAudioVisualGame()
                 GameType.Visual -> runVisualGame(events)
             }
-            // Todo: update the highscore
+            if(_highscore.value < _score.value)
+                userPreferencesRepository.saveHighScore(_score.value)
         }
     }
 
@@ -135,13 +147,23 @@ class GameVM(
         _score.value = 0
     }
 
+    override fun increaseNback() {
+        if(nBack.value<= 15)
+            _nBack.value += 1
+    }
+
+    override fun decreaseNback() {
+        if(nBack.value > 1)
+            _nBack.value -= 1
+    }
+
     private suspend fun runAudioGame() {
         resetGame()
         var previousValue: Int = -1
         _isPlaying.value = true
         for (i in events.indices) {
-            if(i >= nBack){
-                previousValue = events[i-nBack]
+            if(i >= _nBack.value){
+                previousValue = events[i-_nBack.value]
             }
             _gameState.value = _gameState.value.copy(
                 gameType = GameType.Audio,
@@ -162,8 +184,8 @@ class GameVM(
         var previousValue: Int = -1
         _isPlaying.value = true
         for (i in events.indices) {
-            if(i >= nBack){
-                previousValue = events[i-nBack]
+            if(i >= _nBack.value){
+                previousValue = events[i-_nBack.value]
             }
             _gameState.value = _gameState.value.copy(
                 gameType = GameType.Visual,
@@ -244,9 +266,11 @@ class FakeVM: GameViewModel{
         get() = MutableStateFlow(2).asStateFlow()
     override val highscore: StateFlow<Int>
         get() = MutableStateFlow(42).asStateFlow()
-    override val nBack: Int
-        get() = 2
+    override val nBack: StateFlow<Int>
+        get() = nBack
     override val isPlaying: StateFlow<Boolean>
+        get() = TODO("Not yet implemented")
+    override val nrOfTurns: StateFlow<Int>
         get() = TODO("Not yet implemented")
 
     override fun setGameType(gameType: GameType) {
@@ -268,5 +292,13 @@ class FakeVM: GameViewModel{
 
     override fun resetGame() {
 
+    }
+
+    override fun increaseNback() {
+        TODO("Not yet implemented")
+    }
+
+    override fun decreaseNback() {
+        TODO("Not yet implemented")
     }
 }

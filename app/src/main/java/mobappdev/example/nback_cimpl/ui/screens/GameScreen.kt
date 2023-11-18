@@ -1,6 +1,8 @@
 package mobappdev.example.nback_cimpl.ui.screens
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,22 +19,23 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import mobappdev.example.nback_cimpl.R
 import mobappdev.example.nback_cimpl.ui.viewmodels.FakeVM
 import mobappdev.example.nback_cimpl.ui.viewmodels.GameState
@@ -40,36 +43,49 @@ import mobappdev.example.nback_cimpl.ui.viewmodels.GameType
 import mobappdev.example.nback_cimpl.ui.viewmodels.GameViewModel
 import mobappdev.example.nback_cimpl.ui.viewmodels.Guess
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun GameScreen(
     vm:GameViewModel,
     navigate: ()->Unit
 ){
     val gameState by vm.gameState.collectAsState()
+    var textToSpeech: TextToSpeech? by remember { mutableStateOf(null) }
+    val context = LocalContext.current
+    if (textToSpeech == null) {
+        textToSpeech = TextToSpeech(context) {
+            if (it == TextToSpeech.SUCCESS) {
+                print("Successfull")
+            }
+        }
+    }
+    if(vm.gameState.value.isSpeech){ //fungerar inte med vanliga gameState.isSpeech
+        val letter = gameState.letter
+        textToSpeech?.speak(letter, TextToSpeech.QUEUE_FLUSH, null, null)
+        vm.disableSpeech()
+    }
+
+
     Column(modifier = Modifier
         .fillMaxWidth()
         .fillMaxHeight()) {
         //ChooseGameModes(vm)
         Grid(vm,gameState,sideLength = 3)
+
         VisualAndAudio(vm,navigate)
-
     }
-
-
 }
-
-
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
 @Composable
 fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
     val gameState by vm.gameState.collectAsState()
-    val visualButtonColor = when(gameState.guess){
+    val n by vm.nBack.collectAsState()
+    val buttonColor = when(gameState.guess){
         Guess.FALSE -> ButtonDefaults.buttonColors(Color.Red)
         Guess.CORRECT -> ButtonDefaults.buttonColors(Color.Green)
         else -> { ButtonDefaults.buttonColors(Color(127, 82, 255)) }
     }
-    val audioButtonColor = ButtonDefaults.buttonColors(Color(127, 82, 255))
 
 
     val snackBarHostState = remember {
@@ -87,7 +103,7 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
         ) {
             Button(
                 onClick = { vm.checkMatch() },
-                colors = visualButtonColor
+                colors = buttonColor
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.sound_on),
@@ -99,7 +115,7 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
             }
             Button(
                 onClick = { vm.checkMatch() },
-                colors = audioButtonColor
+                colors = buttonColor
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.visual),
@@ -122,7 +138,7 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
             ){
                 Text(
                     modifier = Modifier.padding(12.dp),
-                    text ="Score "+ vm.score.value.toString() + " N:"+vm.nBack.toString(),
+                    text ="Score "+ vm.score.value.toString() + " N = "+n.toString() + "Event Value="+gameState.eventValue.toString(),
                     color = Color.Black,
                 )
             }
@@ -131,6 +147,10 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
             ResetGame(vm)
         }
     }
+}
+
+fun audioGame(vm:GameViewModel){
+
 }
 
 @Composable
@@ -162,7 +182,7 @@ fun Grid(vm: GameViewModel,gameState: GameState, sideLength: Int){
                             .weight(1f)
                             .aspectRatio(1f)
                             .background(
-                                if (rowIndex * sideLength + columnIndex == gameState.eventValue) {
+                                if (vm.gameState.value.gameType != GameType.Audio && vm.isPlaying.value && rowIndex * sideLength + columnIndex == gameState.eventValue - 1) {
                                     Color(177, 253, 132)
                                 } else {
                                     Color.LightGray

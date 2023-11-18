@@ -3,3 +3,7 @@
 1	1086	7219247669813604	CMakeFiles/JniBridge.dir/JniBridge.c.o	b086a90e51d37c9f
 1055	1907	7219247678113114	C:/Users/Test/Documents/GitHub/HI1033/nback_skeletoncode/app/build/intermediates/cxx/Debug/5m172w12/obj/arm64-v8a/libnback_cimpl.so	e8566a20cbbcb080
 1908	2370	7219247682588668	C:/Users/Test/Documents/GitHub/HI1033/nback_skeletoncode/app/build/intermediates/cxx/Debug/5m172w12/obj/arm64-v8a/libJniBridge.so	17e0780ca7dd1031
+11	883	7220259519835929	CMakeFiles/nback_cimpl.dir/nback.c.o	74a34e8770c2b530
+2	905	7220259519835929	CMakeFiles/JniBridge.dir/JniBridge.c.o	b086a90e51d37c9f
+884	1144	7220259522500499	C:/Users/Test/Documents/GitHub/HI1033/nback_skeletoncode/app/build/intermediates/cxx/Debug/5m172w12/obj/arm64-v8a/libnback_cimpl.so	e8566a20cbbcb080
+1145	1300	7220259524071316	C:/Users/Test/Documents/GitHub/HI1033/nback_skeletoncode/app/build/intermediates/cxx/Debug/5m172w12/obj/arm64-v8a/libJniBridge.so	17e0780ca7dd1031
