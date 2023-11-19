@@ -6,11 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -85,82 +89,119 @@ fun HomeScreen(
                 text = "High-Score = $highscore",
                 style = MaterialTheme.typography.headlineLarge
             )
-            // Todo: You'll probably want to change this "BOX" part of the composable
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Button(onClick = { vm.decreaseNback() }) {
-                        Text(text = "-1")
-                    }
-                    Button(onClick = {}) {
-                        Text(text = "N = $N")
-                    }
-                    Button(onClick = { vm.increaseNback() }) {
-                        Text(text = "+1")
-                    }
-                }
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+            if(isLandscape){
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
                 ){
-                    Button(onClick = { vm.decreaseSideLength() }) {
-                        Text(text = "-1")
+                    Box(modifier = Modifier.weight(1f)){
+                        GameSettings(vm = vm)
                     }
-                    Button(onClick = {}) {
-                        Text(text = "$sideLength X $sideLength")
-                    }
-                    Button(onClick = { vm.increaseSideLength() }) {
-                        Text(text = "+1")
+                    Box(modifier = Modifier.weight(1f)){
+                        Column{
+                            ChooseGameModes(vm = vm)
+                            Button(
+                                onClick = {navigate.invoke()}
+                            ){
+                                Text(
+                                    modifier = Modifier.padding(12.dp),
+                                    text = "Go to game".uppercase(),
+                                    style = MaterialTheme.typography.displaySmall
+                                )
+                            }
+                        }
                     }
                 }
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+            }else{
+                GameSettings(vm = vm)
+                ChooseGameModes(vm = vm)
+                Button(
+                    onClick = {navigate.invoke()}
                 ){
-                    Button(onClick = { vm.decreaseTurns() }) {
-                        Text(text = "-1")
-                    }
-                    Button(onClick = {}) {
-                        Text(text = "Turns = $nrOfTurns")
-                    }
-                    Button(onClick = { vm.increaseTurns() }) {
-                        Text(text = "+1")
-                    }
+                    Text(
+                        modifier = Modifier.padding(12.dp),
+                        text = "Go to game".uppercase(),
+                        style = MaterialTheme.typography.displaySmall
+                    )
                 }
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ){
-                    Button(onClick = { vm.decreasePercent(5) }) {
-                        Text(text = "-5")
-                    }
-                    Button(onClick = {}) {
-                        Text(text = "Percent = $percent")
-                    }
-                    Button(onClick = { vm.increasePercent(5) }) {
-                        Text(text = "+5")
-                    }
-                }
-            }
 
-
-            ChooseGameModes(vm = vm)
-            Button(
-                onClick = {navigate.invoke()}
-            ){
-                Text(
-                    modifier = Modifier.padding(12.dp),
-                    text = "Go to game".uppercase(),
-                    style = MaterialTheme.typography.displaySmall
-                )
             }
         }
     }
+}
+
+@Composable
+fun GameSettings(vm:GameViewModel){
+    val N by vm.nBack.collectAsState()
+    val sideLength by vm.sideLength.collectAsState()
+    val nrOfTurns by vm.nrOfTurns.collectAsState()
+    val percent by vm.percentMatches.collectAsState()
+
+    val configuration = LocalConfiguration.current
+
+
+    Column(
+        //modifier = Modifier.weight(1f),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Button(onClick = { vm.decreaseNback() }) {
+                Text(text = "-1")
+            }
+            Button(onClick = {}) {
+                Text(text = "N = $N")
+            }
+            Button(onClick = { vm.increaseNback() }) {
+                Text(text = "+1")
+            }
+        }
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ){
+            Button(onClick = { vm.decreaseSideLength() }) {
+                Text(text = "-1")
+            }
+            Button(onClick = {}) {
+                Text(text = "$sideLength X $sideLength")
+            }
+            Button(onClick = { vm.increaseSideLength() }) {
+                Text(text = "+1")
+            }
+        }
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ){
+            Button(onClick = { vm.decreaseTurns() }) {
+                Text(text = "-1")
+            }
+            Button(onClick = {}) {
+                Text(text = "Turns = $nrOfTurns")
+            }
+            Button(onClick = { vm.increaseTurns() }) {
+                Text(text = "+1")
+            }
+        }
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ){
+            Button(onClick = { vm.decreasePercent(5) }) {
+                Text(text = "-5")
+            }
+            Button(onClick = {}) {
+                Text(text = "Percent = $percent")
+            }
+            Button(onClick = { vm.increasePercent(5) }) {
+                Text(text = "+5")
+            }
+        }
+    }
+
 }
 
 @SuppressLint("StateFlowValueCalledInComposition")
@@ -172,7 +213,6 @@ fun ChooseGameModes(vm:GameViewModel){
     ){
         Row(
             modifier = Modifier
-                .fillMaxWidth()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
@@ -202,6 +242,15 @@ fun ChooseGameModes(vm:GameViewModel){
 @Preview
 @Composable
 fun HomeScreenPreview() {
+    // Since I am injecting a VM into my homescreen that depends on Application context, the preview doesn't work.
+    Surface(){
+        HomeScreen(FakeVM(), navigate = {"game"})
+    }
+}
+
+@Preview(showBackground = true, device = Devices.NEXUS_9, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Composable
+fun HomeScreenLandscapePreview() {
     // Since I am injecting a VM into my homescreen that depends on Application context, the preview doesn't work.
     Surface(){
         HomeScreen(FakeVM(), navigate = {"game"})

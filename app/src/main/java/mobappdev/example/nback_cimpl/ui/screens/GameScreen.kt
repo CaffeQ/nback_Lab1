@@ -84,9 +84,17 @@ fun GameScreen(
                 .fillMaxHeight()
 
         ) {
+
             Box(modifier = Modifier
                 .weight(1f)){
-                VisualAndAudio(vm = vm,navigate)
+                Column {
+                    Text(
+                        modifier = Modifier.padding(12.dp),
+                        text = "Score: $score N = $N",
+                        style = MaterialTheme.typography.headlineLarge
+                    )
+                    VisualAndAudio(vm = vm,navigate)
+                }
             }
             Box(
                 modifier = Modifier
