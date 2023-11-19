@@ -405,39 +405,41 @@ class GameVM(
     init {
         // Code that runs during creation of the vm
         viewModelScope.launch {
-            try {
-                Log.d("Init", "Initializing")
-                userPreferencesRepository.highscore.collect {
-                    Log.d("Highscore", it.toString())
-                    _highscore.value = it
-                }
+            Log.d("Init", "Initializing")
+            userPreferencesRepository.highscore.collect {
+                Log.d("Highscore", it.toString())
+                _highscore.value = it
+            }
+        }
+        viewModelScope.launch {
+            userPreferencesRepository.n.collect {
+                Log.d("Fetching", it.toString())
+                _nBack.value = it
+            }
+        }
+        viewModelScope.launch{
+            userPreferencesRepository.sideLength.collect {
+                Log.d("SideLength", it.toString())
+                _sideLength.value = it
+            }
+        }
+        viewModelScope.launch {
+            userPreferencesRepository.turns.collect {
+                Log.d("Turns", it.toString())
+                _nrOfTurns.value = it
+            }
+        }
 
-                userPreferencesRepository.n.collect {
-                    Log.d("Fetching", it.toString())
-                    _nBack.value = it
-                }
-
-                userPreferencesRepository.sideLength.collect {
-                    Log.d("SideLength", it.toString())
-                    _sideLength.value = it
-                }
-
-                userPreferencesRepository.turns.collect {
-                    Log.d("Turns", it.toString())
-                    _nrOfTurns.value = it
-                }
-
-                userPreferencesRepository.percent.collect {
-                    Log.d("Percent", it.toString())
-                    _percentMatches.value = it
-                }
-
-                userPreferencesRepository.time.collect {
-                    Log.d("Time", it.toString())
-                    _eventInterval.value = it
-                }
-            } catch (e: Exception) {
-                Log.e("Init", "Error in init block", e)
+        viewModelScope.launch {
+            userPreferencesRepository.percent.collect {
+                Log.d("Percent", it.toString())
+                _percentMatches.value = it
+            }
+        }
+        viewModelScope.launch {
+            userPreferencesRepository.time.collect {
+                Log.d("Time", it.toString())
+                _eventInterval.value = it
             }
         }
     }
