@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,11 +18,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -34,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -74,9 +78,11 @@ fun GameScreen(
 
  */
 
+ 
+
     if(gameState.isSpeech){ //fungerar inte med vanliga gameState.isSpeech
         val letter = gameState.letter
-     //   textToSpeech?.speak(letter, TextToSpeech.QUEUE_FLUSH, null, null)
+      //  textToSpeech?.speak(letter, TextToSpeech.QUEUE_FLUSH, null, null)
         vm.disableSpeech()
     }
     if(isLandscape){
@@ -132,23 +138,8 @@ fun GameScreen(
 @Composable
 fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
     val gameState by vm.gameState.collectAsState()
-    var visualButtonColor = ButtonDefaults.buttonColors(Color(127, 82, 255))
-    var audioButtonColor = ButtonDefaults.buttonColors(Color(127, 82, 255))
-
-    if(gameState.gameType == GameType.Audio){
-        audioButtonColor = when(gameState.guess){
-            Guess.FALSE -> ButtonDefaults.buttonColors(Color.Red)
-            Guess.CORRECT -> ButtonDefaults.buttonColors(Color.Green)
-            else -> { ButtonDefaults.buttonColors(Color(127, 82, 255)) }
-        }
-    }else if(gameState.gameType == GameType.Visual){
-        visualButtonColor = when(gameState.guess){
-            Guess.FALSE -> ButtonDefaults.buttonColors(Color.Red)
-            Guess.CORRECT -> ButtonDefaults.buttonColors(Color.Green)
-            else -> { ButtonDefaults.buttonColors(Color(127, 82, 255)) }
-        }
-    }
-
+    var visualButtonColor by remember { mutableStateOf(Color(127, 82, 255)) }
+    var audioButtonColor by remember { mutableStateOf(Color(127, 82, 255)) }
 
     val snackBarHostState = remember {
         SnackbarHostState()
@@ -164,8 +155,24 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
             verticalAlignment = Alignment.CenterVertically
         ) {
             Button(
-                onClick = { vm.checkMatch() },
-                colors = audioButtonColor
+                onClick = {
+                    if(gameState.gameType != GameType.Visual){
+                        vm.checkMatch()
+                        audioButtonColor = when (gameState.guess) {
+                            Guess.FALSE -> Color.Red
+                            Guess.CORRECT -> Color.Green
+                            else -> Color(127, 82, 255)
+                        }
+                    }else{
+                        audioButtonColor = Color(127, 82, 255)
+                    }
+                }
+                ,
+                modifier = Modifier
+                    .background(
+                        color = audioButtonColor,
+                        shape = RoundedCornerShape(16.dp)
+                    )
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.sound_on),
@@ -176,8 +183,23 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
                 )
             }
             Button(
-                onClick = { vm.checkMatch() },
-                colors = visualButtonColor
+                onClick = {
+                    if(gameState.gameType != GameType.Audio){
+                        vm.checkMatch()
+                        visualButtonColor = when (gameState.guess) {
+                            Guess.FALSE -> Color.Red
+                            Guess.CORRECT -> Color.Green
+                            else -> Color(127, 82, 255)
+                        }
+                    }else{
+                        visualButtonColor = Color(127, 82, 255)
+                    }
+                },
+                modifier = Modifier
+                    .background(
+                        color = visualButtonColor,
+                        shape = RoundedCornerShape(16.dp)
+                    )
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.visual),

@@ -155,7 +155,7 @@ class GameVM(
     }
 
     override fun checkMatch() {
-        if(Guess.NONE != _gameState.value.guess)
+        if(_gameState.value.eventValue == -1 || Guess.NONE != _gameState.value.guess)
             return
         val currentValue = _gameState.value.eventValue
         val previousValue = _gameState.value.previousValue
@@ -277,8 +277,26 @@ class GameVM(
         _isPlaying.value = false
     }
 
-    private fun runAudioVisualGame(){
-        // Todo: Make work for Higher grade
+    private suspend fun runAudioVisualGame() {
+        resetGame()
+        var previousValue: Int = -1
+        _isPlaying.value = true
+        for (i in events.indices) {
+            if (i >= _nBack.value) {
+                previousValue = events[i - _nBack.value]
+            }
+            _gameState.value = _gameState.value.copy(
+                gameType = GameType.AudioVisual,
+                eventValue = events[i],
+                previousValue = previousValue,
+                guess = Guess.NONE,
+                letter = intToLetter(events[i]),
+                isSpeech = true
+            )
+            delay(_eventInterval.value)
+            previousValue = -1
+        }
+        _isPlaying.value = false
     }
 
     private fun intToLetter(value:Int): String{

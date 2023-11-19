@@ -250,6 +250,15 @@ fun ChooseGameModes(vm:GameViewModel){
                     color = Color.Black,
                 )
             }
+            Button(
+                onClick = {vm.setGameType(GameType.AudioVisual)}
+            ){
+                Text(
+                    modifier = Modifier.padding(12.dp),
+                    text = "Both".uppercase(),
+                    color = Color.Black,
+                )
+            }
         }
     }
 }
@@ -257,7 +266,6 @@ fun ChooseGameModes(vm:GameViewModel){
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    // Since I am injecting a VM into my homescreen that depends on Application context, the preview doesn't work.
     Surface(){
         HomeScreen(FakeVM(), navigate = {"game"})
     }
@@ -266,7 +274,6 @@ fun HomeScreenPreview() {
 @Preview(showBackground = true, device = Devices.NEXUS_9, uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
 fun HomeScreenLandscapePreview() {
-    // Since I am injecting a VM into my homescreen that depends on Application context, the preview doesn't work.
     Surface(){
         HomeScreen(FakeVM(), navigate = {"game"})
     }
