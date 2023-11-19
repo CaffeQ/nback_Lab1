@@ -106,10 +106,9 @@ class GameVM(
     override val highscore: StateFlow<Int>
         get() = _highscore
 
-    // nBack is currently hardcoded
-    private val _nBack = MutableStateFlow(2)
+    private val _nBack = MutableStateFlow(3)
     override val nBack: StateFlow<Int>
-        get() = _nBack.asStateFlow()
+        get() = _nBack
     private val _isPlaying = MutableStateFlow(false)
     override val isPlaying: StateFlow<Boolean>
         get() = _isPlaying
@@ -166,8 +165,15 @@ class GameVM(
                 GameType.AudioVisual -> runAudioVisualGame(audioEvents,visualEvents)
                 GameType.Visual -> runVisualGame(visualEvents)
             }
-            if(_highscore.value < _score.value)
+            if(_highscore.value < _score.value){
                 userPreferencesRepository.saveHighScore(_score.value)
+            }
+            Log.d("Saving",_sideLength.value.toString())
+            userPreferencesRepository.saveSideLength(_sideLength.value)
+            userPreferencesRepository.saveN(_nBack.value)
+            userPreferencesRepository.saveTurns(_nrOfTurns.value)
+            userPreferencesRepository.savePercent(_percentMatches.value)
+            userPreferencesRepository.saveTime(_eventInterval.value)
         }
     }
 
@@ -247,7 +253,7 @@ class GameVM(
     }
 
     override fun decreaseSideLength() {
-        if(_sideLength.value >= 3)
+        if(_sideLength.value - 1 >= 3)
             _sideLength.value -= 1
     }
 
@@ -289,13 +295,13 @@ class GameVM(
         _isPlaying.value = true
         for (i in events.indices) {
             if(i >= _nBack.value){
-                previousValue = events[i-_nBack.value]
+                previousValue = events[i-_nBack.value] % 26
             }
             _audioState.value = _audioState.value.copy(
-                eventValue = events[i],
+                eventValue = events[i] % 26,
                 previousValue = previousValue,
                 guess = Guess.NONE,
-                letter = intToLetter(events[i]),
+                letter = intToLetter(events[i] % 26),
                 isSpeech = true
             )
             delay(_eventInterval.value)
@@ -335,7 +341,7 @@ class GameVM(
         for (i in visualEvents.indices) {
             if(i >= _nBack.value){
                 previousVisualValue = visualEvents[i-_nBack.value]
-                previousAudioValue = audioEvents[i-_nBack.value]
+                previousAudioValue = audioEvents[i-_nBack.value] % 26
             }
             _visualState.value = _visualState.value.copy(
                 eventValue = visualEvents[i],
@@ -343,10 +349,10 @@ class GameVM(
                 guess = Guess.NONE,
             )
             _audioState.value = _audioState.value.copy(
-                eventValue = audioEvents[i],
+                eventValue = audioEvents[i] % 26,
                 previousValue = previousAudioValue,
                 guess = Guess.NONE,
-                letter = intToLetter(audioEvents[i]),
+                letter = intToLetter(audioEvents[i] % 26),
                 isSpeech = true
             )
             delay(eventInterval.value)
@@ -372,6 +378,17 @@ class GameVM(
             13 -> "M"
             14 -> "N"
             15 -> "O"
+            16 -> "P"
+            17 -> "Q"
+            18 -> "R"
+            19 -> "S"
+            20 -> "T"
+            21 -> "U"
+            22 -> "V"
+            23 -> "W"
+            24 -> "X"
+            25 -> "Y"
+            26 -> "Z"
             else -> {"?"}
         }
     }
@@ -388,8 +405,39 @@ class GameVM(
     init {
         // Code that runs during creation of the vm
         viewModelScope.launch {
-            userPreferencesRepository.highscore.collect {
-                _highscore.value = it
+            try {
+                Log.d("Init", "Initializing")
+                userPreferencesRepository.highscore.collect {
+                    Log.d("Highscore", it.toString())
+                    _highscore.value = it
+                }
+
+                userPreferencesRepository.n.collect {
+                    Log.d("Fetching", it.toString())
+                    _nBack.value = it
+                }
+
+                userPreferencesRepository.sideLength.collect {
+                    Log.d("SideLength", it.toString())
+                    _sideLength.value = it
+                }
+
+                userPreferencesRepository.turns.collect {
+                    Log.d("Turns", it.toString())
+                    _nrOfTurns.value = it
+                }
+
+                userPreferencesRepository.percent.collect {
+                    Log.d("Percent", it.toString())
+                    _percentMatches.value = it
+                }
+
+                userPreferencesRepository.time.collect {
+                    Log.d("Time", it.toString())
+                    _eventInterval.value = it
+                }
+            } catch (e: Exception) {
+                Log.e("Init", "Error in init block", e)
             }
         }
     }

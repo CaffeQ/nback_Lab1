@@ -132,10 +132,10 @@ fun HomeScreen(
 
 @Composable
 fun GameSettings(vm:GameViewModel){
-    val N by vm.nBack.collectAsState()
+    val nBack by vm.nBack.collectAsState()
     val sideLength by vm.sideLength.collectAsState()
     val nrOfTurns by vm.nrOfTurns.collectAsState()
-    val percent by vm.percentMatches.collectAsState()
+    val percentMatches by vm.percentMatches.collectAsState()
     val eventInterval by vm.eventInterval.collectAsState()
 
     val configuration = LocalConfiguration.current
@@ -153,7 +153,7 @@ fun GameSettings(vm:GameViewModel){
                 Text(text = "-1")
             }
             Button(onClick = {}) {
-                Text(text = "N = $N")
+                Text(text = "N = $nBack")
             }
             Button(onClick = { vm.increaseNback() }) {
                 Text(text = "+1")
@@ -195,7 +195,7 @@ fun GameSettings(vm:GameViewModel){
                 Text(text = "-5")
             }
             Button(onClick = {}) {
-                Text(text = "$percent %")
+                Text(text = percentMatches.toString()+" %")
             }
             Button(onClick = { vm.increasePercent(5) }) {
                 Text(text = "+5")
