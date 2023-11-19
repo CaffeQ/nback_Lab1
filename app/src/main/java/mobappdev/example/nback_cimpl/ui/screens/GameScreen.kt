@@ -1,12 +1,10 @@
 package mobappdev.example.nback_cimpl.ui.screens
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.res.Configuration
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,18 +15,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,7 +33,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -60,14 +55,16 @@ fun GameScreen(
 ){
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val gameState by vm.gameState.collectAsState()
-    //var textToSpeech: TextToSpeech? by remember { mutableStateOf(null) }
+    val audioState by vm.audioState.collectAsState()
+    val visualState by vm.visualState.collectAsState()
+    var textToSpeech: TextToSpeech? by remember { mutableStateOf(null) }
     val context = LocalContext.current
     val sideLength by vm.sideLength.collectAsState()
     val score by vm.score.collectAsState()
     val N by vm.nBack.collectAsState()
     val nrOfscores by vm.nrOfScores.collectAsState()
-/*
+    val isPlaying by vm.isPlaying.collectAsState()
+
     if (textToSpeech == null) {
         textToSpeech = TextToSpeech(context) {
             if (it == TextToSpeech.SUCCESS) {
@@ -76,13 +73,10 @@ fun GameScreen(
         }
     }
 
- */
 
- 
-
-    if(gameState.isSpeech){ //fungerar inte med vanliga gameState.isSpeech
-        val letter = gameState.letter
-      //  textToSpeech?.speak(letter, TextToSpeech.QUEUE_FLUSH, null, null)
+    if( isPlaying && audioState.isSpeech){ //fungerar inte med vanliga gameState.isSpeech
+        val letter = audioState.letter
+        textToSpeech?.speak(letter, TextToSpeech.QUEUE_FLUSH, null, null)
         vm.disableSpeech()
     }
     if(isLandscape){
@@ -98,7 +92,7 @@ fun GameScreen(
                 Column {
                     Text(
                         modifier = Modifier.padding(12.dp),
-                        text = "Score: $score N = $N E: ${gameState.eventValue} N# Correct $nrOfscores",
+                        text = "Score: $score N = $N E: ${visualState.eventValue} N# Correct $nrOfscores",
                         style = MaterialTheme.typography.headlineLarge
                     )
                     VisualAndAudio(vm = vm,navigate)
@@ -108,7 +102,7 @@ fun GameScreen(
                 modifier = Modifier
                     .weight(1f)
             ){
-                Grid(vm = vm, gameState = gameState, sideLength = sideLength)
+                Grid(vm = vm, gameState = visualState, sideLength = sideLength)
             }
         }
     }else{
@@ -123,11 +117,11 @@ fun GameScreen(
             ) {
                 Text(
                     modifier = Modifier.padding(12.dp),
-                    text = "Score: $score N = $N E: ${gameState.eventValue} N# Correct $nrOfscores",
+                    text = "Score: $score N = $N E: ${visualState.eventValue} N# Correct $nrOfscores",
                     style = MaterialTheme.typography.headlineLarge
                 )
             }
-            Grid(vm,gameState,sideLength = sideLength)
+            Grid(vm,visualState,sideLength = sideLength)
 
             VisualAndAudio(vm,navigate)
         }
@@ -137,13 +131,17 @@ fun GameScreen(
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
 @Composable
 fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
-    val gameState by vm.gameState.collectAsState()
+    val audioState by vm.audioState.collectAsState()
+    val gameType by vm.gameType.collectAsState()
     var visualButtonColor by remember { mutableStateOf(Color(127, 82, 255)) }
     var audioButtonColor by remember { mutableStateOf(Color(127, 82, 255)) }
-    if(gameState.guess == Guess.NONE){
+    val visualState by vm.visualState.collectAsState()
+
+    if(visualState.guess == Guess.NONE ){
         visualButtonColor = Color(127, 82, 255)
-        audioButtonColor = Color(127, 82, 255)
     }
+    if(audioState.guess == Guess.NONE)
+        audioButtonColor = Color(127, 82, 255)
 
     val snackBarHostState = remember {
         SnackbarHostState()
@@ -160,15 +158,9 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
         ) {
             Button(
                 onClick = {
-                    if(gameState.gameType != GameType.Visual){
-                        vm.checkMatch()
-                        audioButtonColor = when (gameState.guess) {
-                            Guess.FALSE -> Color.Red
-                            Guess.CORRECT -> Color.Green
-                            else -> Color(127, 82, 255)
-                        }
+                    if(gameType == GameType.Audio || gameType == GameType.AudioVisual)
+                        vm.checkAudioMatch()
                     }
-                }
                 ,
                 modifier = Modifier
                     .background(
@@ -176,6 +168,13 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
                         shape = RoundedCornerShape(16.dp)
                     )
             ) {
+                LaunchedEffect(audioState.guess) {
+                    audioButtonColor = when (audioState.guess) {
+                        Guess.FALSE -> Color.Red
+                        Guess.CORRECT -> Color.Green
+                        else -> Color(127, 82, 255)
+                    }
+                }
                 Icon(
                     painter = painterResource(id = R.drawable.sound_on),
                     contentDescription = "Sound",
@@ -186,12 +185,8 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
             }
             Button(
                 onClick = {
-                        vm.checkMatch()
-                        visualButtonColor = when (vm.gameState.value.guess) {
-                            Guess.FALSE -> Color.Red
-                            Guess.CORRECT -> Color.Green
-                            else -> Color(127, 82, 255)
-                    }
+                    if(gameType == GameType.Visual || gameType == GameType.AudioVisual)
+                        vm.checkVisualMatch()
                 },
                 modifier = Modifier
                     .background(
@@ -199,6 +194,13 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
                         shape = RoundedCornerShape(16.dp)
                     )
             ) {
+                LaunchedEffect(visualState.guess){
+                    visualButtonColor = when (visualState.guess) {
+                        Guess.FALSE -> Color.Red
+                        Guess.CORRECT -> Color.Green
+                        else -> Color(127, 82, 255)
+                    }
+                }
                 Icon(
                     painter = painterResource(id = R.drawable.visual),
                     contentDescription = "Visual",
@@ -230,7 +232,7 @@ fun audioGame(vm:GameViewModel){
 @Composable
 fun ResetGame(vm:GameViewModel){
     Button(
-        onClick = vm::resetGame
+        onClick = { vm.resetGame()}
     ){
         Text(
             modifier = Modifier.padding(2.dp),
@@ -242,6 +244,7 @@ fun ResetGame(vm:GameViewModel){
 
 @Composable
 fun Grid(vm: GameViewModel,gameState: GameState, sideLength: Int){
+    val gameType by vm.gameType.collectAsState()
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -256,7 +259,7 @@ fun Grid(vm: GameViewModel,gameState: GameState, sideLength: Int){
                             .weight(1f)
                             .aspectRatio(1f)
                             .background(
-                                if (vm.gameState.value.gameType != GameType.Audio && vm.isPlaying.value && rowIndex * sideLength + columnIndex == gameState.eventValue - 1) {
+                                if (gameType != GameType.Audio && vm.isPlaying.value && rowIndex * sideLength + columnIndex == gameState.eventValue - 1) {
                                     Color(177, 253, 132)
                                 } else {
                                     Color.LightGray
@@ -274,11 +277,11 @@ fun DebugginText(vm:GameViewModel){
     val TAG ="TESTING"
     Text(text = "Event value: ${vm.gameState.value.eventValue}")
     Text(text = "Previous value: ${vm.gameState.value.previousValue}")
-    Text(text = "Game type: ${vm.gameState.value.gameType}")
+    Text(text = "Game type: ${vm.gameType}")
 
     Log.d(TAG,"Event value: "+vm.gameState.value.eventValue.toString())
     Log.d(TAG,"Previous value: ${vm.gameState.value.previousValue}")
-    Log.d(TAG,"Game type: ${vm.gameState.value.gameType}")
+    Log.d(TAG,"Game type: ${vm.gameType}")
 }
 
 @Composable
