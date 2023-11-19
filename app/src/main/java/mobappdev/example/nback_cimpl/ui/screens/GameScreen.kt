@@ -62,7 +62,8 @@ fun GameScreen(
     val sideLength by vm.sideLength.collectAsState()
     val score by vm.score.collectAsState()
     val N by vm.nBack.collectAsState()
-    /*
+    val nrOfscores by vm.nrOfScores.collectAsState()
+/*
     if (textToSpeech == null) {
         textToSpeech = TextToSpeech(context) {
             if (it == TextToSpeech.SUCCESS) {
@@ -71,10 +72,11 @@ fun GameScreen(
         }
     }
 
-     */
-    if(vm.gameState.value.isSpeech){ //fungerar inte med vanliga gameState.isSpeech
+ */
+
+    if(gameState.isSpeech){ //fungerar inte med vanliga gameState.isSpeech
         val letter = gameState.letter
-    //    textToSpeech?.speak(letter, TextToSpeech.QUEUE_FLUSH, null, null)
+     //   textToSpeech?.speak(letter, TextToSpeech.QUEUE_FLUSH, null, null)
         vm.disableSpeech()
     }
     if(isLandscape){
@@ -90,7 +92,7 @@ fun GameScreen(
                 Column {
                     Text(
                         modifier = Modifier.padding(12.dp),
-                        text = "Score: $score N = $N",
+                        text = "Score: $score N = $N E: ${gameState.eventValue} N# Correct $nrOfscores",
                         style = MaterialTheme.typography.headlineLarge
                     )
                     VisualAndAudio(vm = vm,navigate)
@@ -107,7 +109,7 @@ fun GameScreen(
         Column(modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()) {
-            //ChooseGameModes(vm)
+
             Column(
                 modifier = Modifier,
                 verticalArrangement = Arrangement.Center,
@@ -115,7 +117,7 @@ fun GameScreen(
             ) {
                 Text(
                     modifier = Modifier.padding(12.dp),
-                    text = "Score: $score N = $N",
+                    text = "Score: $score N = $N E: ${gameState.eventValue} N# Correct $nrOfscores",
                     style = MaterialTheme.typography.headlineLarge
                 )
             }
@@ -130,11 +132,21 @@ fun GameScreen(
 @Composable
 fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
     val gameState by vm.gameState.collectAsState()
-    val n by vm.nBack.collectAsState()
-    val buttonColor = when(gameState.guess){
-        Guess.FALSE -> ButtonDefaults.buttonColors(Color.Red)
-        Guess.CORRECT -> ButtonDefaults.buttonColors(Color.Green)
-        else -> { ButtonDefaults.buttonColors(Color(127, 82, 255)) }
+    var visualButtonColor = ButtonDefaults.buttonColors(Color(127, 82, 255))
+    var audioButtonColor = ButtonDefaults.buttonColors(Color(127, 82, 255))
+
+    if(gameState.gameType == GameType.Audio){
+        audioButtonColor = when(gameState.guess){
+            Guess.FALSE -> ButtonDefaults.buttonColors(Color.Red)
+            Guess.CORRECT -> ButtonDefaults.buttonColors(Color.Green)
+            else -> { ButtonDefaults.buttonColors(Color(127, 82, 255)) }
+        }
+    }else if(gameState.gameType == GameType.Visual){
+        visualButtonColor = when(gameState.guess){
+            Guess.FALSE -> ButtonDefaults.buttonColors(Color.Red)
+            Guess.CORRECT -> ButtonDefaults.buttonColors(Color.Green)
+            else -> { ButtonDefaults.buttonColors(Color(127, 82, 255)) }
+        }
     }
 
 
@@ -153,7 +165,7 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
         ) {
             Button(
                 onClick = { vm.checkMatch() },
-                colors = buttonColor
+                colors = audioButtonColor
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.sound_on),
@@ -165,7 +177,7 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
             }
             Button(
                 onClick = { vm.checkMatch() },
-                colors = buttonColor
+                colors = visualButtonColor
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.visual),
@@ -179,19 +191,11 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(2.dp),
+                .padding(2.dp)
+                .fillMaxHeight(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            Box(
-                modifier = Modifier.background(Color.LightGray)
-            ){
-                Text(
-                    modifier = Modifier.padding(12.dp),
-                    text ="Event Value="+gameState.eventValue.toString(),
-                    color = Color.Black,
-                )
-            }
             StartGame(vm)
             GoHome(vm,navigate)
             ResetGame(vm)

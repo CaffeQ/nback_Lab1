@@ -136,6 +136,7 @@ fun GameSettings(vm:GameViewModel){
     val sideLength by vm.sideLength.collectAsState()
     val nrOfTurns by vm.nrOfTurns.collectAsState()
     val percent by vm.percentMatches.collectAsState()
+    val eventInterval by vm.eventInterval.collectAsState()
 
     val configuration = LocalConfiguration.current
 
@@ -194,10 +195,24 @@ fun GameSettings(vm:GameViewModel){
                 Text(text = "-5")
             }
             Button(onClick = {}) {
-                Text(text = "Percent = $percent")
+                Text(text = "$percent %")
             }
             Button(onClick = { vm.increasePercent(5) }) {
                 Text(text = "+5")
+            }
+        }
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ){
+            Button(onClick = { vm.decreaseTime() }) {
+                Text(text = "-0.25")
+            }
+            Button(onClick = {}) {
+                Text(text = "$eventInterval ms")
+            }
+            Button(onClick = { vm.increaseTime() }) {
+                Text(text = "+0.25")
             }
         }
     }

@@ -47,6 +47,7 @@ interface GameViewModel {
 
     val percentMatches: StateFlow<Int>
     val nrOfTurns: StateFlow<Int>
+    val eventInterval : StateFlow<Long>
     fun setGameType(gameType: GameType)
     fun startGame()
     fun enableSpeech()
@@ -65,6 +66,9 @@ interface GameViewModel {
 
     fun decreasePercent(percent:Int)
     fun increasePercent(percent:Int)
+
+    fun increaseTime()
+    fun decreaseTime()
 
 }
 
@@ -108,7 +112,9 @@ class GameVM(
 
 
     private var job: Job? = null  // coroutine job for the game event
-    private val eventInterval: Long = 2000L  // 2000 ms (2s)
+    private val _eventInterval = MutableStateFlow(2000L)  // 2000 ms (2s)
+    override val eventInterval: StateFlow<Long>
+        get() = _eventInterval.asStateFlow()
 
     private val nBackHelper = NBackHelper()  // Helper that generate the event array
     private var events = emptyArray<Int>()  // Array with all events
@@ -155,6 +161,7 @@ class GameVM(
         val previousValue = _gameState.value.previousValue
         val guess: Guess
         if(previousValue != -1 && currentValue == previousValue ){
+            _nrOfScores.value +=1
             _score.value +=1
             guess = Guess.CORRECT
         }else{
@@ -172,6 +179,7 @@ class GameVM(
             eventValue = -1,
             previousValue = -1,
         )
+        _nrOfScores.value = 0
         _isPlaying.value = false
         _score.value = 0
     }
@@ -216,6 +224,17 @@ class GameVM(
             _percentMatches.value += percent
     }
 
+    override fun increaseTime() {
+        if(_eventInterval.value + 500L <= 4000L)
+            _eventInterval.value += 250L
+    }
+
+    override fun decreaseTime() {
+        if(_eventInterval.value - 500L >= 500L)
+            _eventInterval.value -= 250L
+    }
+
+
     private suspend fun runAudioGame() {
         resetGame()
         var previousValue: Int = -1
@@ -232,7 +251,7 @@ class GameVM(
                 letter = intToLetter(events[i]),
                 isSpeech = true
             )
-            delay(eventInterval)
+            delay(_eventInterval.value)
             previousValue = -1
         }
         _isPlaying.value = false
@@ -252,7 +271,7 @@ class GameVM(
                 previousValue = previousValue,
                 guess = Guess.NONE,
             )
-            delay(eventInterval)
+            delay(eventInterval.value)
             previousValue = -1
         }
         _isPlaying.value = false
@@ -343,6 +362,8 @@ class FakeVM: GameViewModel{
         get() = MutableStateFlow(30).asStateFlow()
     override val nrOfTurns: StateFlow<Int>
         get() = MutableStateFlow(10).asStateFlow()
+    override val eventInterval: StateFlow<Long>
+        get() = MutableStateFlow(2000L).asStateFlow()
 
     override fun setGameType(gameType: GameType) {
     }
@@ -392,6 +413,14 @@ class FakeVM: GameViewModel{
     }
 
     override fun increasePercent(percent: Int) {
+
+    }
+
+    override fun increaseTime() {
+
+    }
+
+    override fun decreaseTime() {
 
     }
 }
