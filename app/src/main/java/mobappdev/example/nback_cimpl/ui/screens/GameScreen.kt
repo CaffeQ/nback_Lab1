@@ -140,6 +140,10 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
     val gameState by vm.gameState.collectAsState()
     var visualButtonColor by remember { mutableStateOf(Color(127, 82, 255)) }
     var audioButtonColor by remember { mutableStateOf(Color(127, 82, 255)) }
+    if(gameState.guess == Guess.NONE){
+        visualButtonColor = Color(127, 82, 255)
+        audioButtonColor = Color(127, 82, 255)
+    }
 
     val snackBarHostState = remember {
         SnackbarHostState()
@@ -163,8 +167,6 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
                             Guess.CORRECT -> Color.Green
                             else -> Color(127, 82, 255)
                         }
-                    }else{
-                        audioButtonColor = Color(127, 82, 255)
                     }
                 }
                 ,
@@ -184,15 +186,11 @@ fun VisualAndAudio(vm: GameViewModel, navigate: () -> Unit){
             }
             Button(
                 onClick = {
-                    if(gameState.gameType != GameType.Audio){
                         vm.checkMatch()
-                        visualButtonColor = when (gameState.guess) {
+                        visualButtonColor = when (vm.gameState.value.guess) {
                             Guess.FALSE -> Color.Red
                             Guess.CORRECT -> Color.Green
                             else -> Color(127, 82, 255)
-                        }
-                    }else{
-                        visualButtonColor = Color(127, 82, 255)
                     }
                 },
                 modifier = Modifier
